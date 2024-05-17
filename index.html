@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rype - Typing Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #2e0249;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        header {
+            width: 100%;
+            background-color: #2e0249;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            position: relative;
+        }
+        header img {
+            position: absolute;
+            top: -175px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            filter: grayscale(100%);
+            transition: filter 0.3s ease;
+        }
+        header img:hover {
+            filter: grayscale(0%);
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: #3b065e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .paragraph {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.5);
+            user-select: none;
+        }
+        .input-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .input-container input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-bottom: 2px solid #d16ba5;
+            background: transparent;
+            color: #fff;
+            font-size: 1.2em;
+            outline: none;
+        }
+        .results {
+            display: none;
+            margin-top: 20px;
+        }
+        .results p {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        .btn-retry {
+            padding: 10px;
+            background-color: #d16ba5;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .btn-retry:hover {
+            background-color: #c05694;
+        }
+        .correct {
+            color: #4caf50;
+        }
+        .incorrect {
+            color: #ff1744;
+        }
+        .signature {
+            margin-top: 20px;
+            font-size: 0.8em;
+        }
+        .signature a {
+            color: #fff;
+            text-decoration: none;
+        }
+        .signature a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Rype - Typin Test</h1>
+        <a href="https://monkeytype.com/"><img src="rp.PNG" alt="Profile Picture"></a>
+    </header>
+    <div class="container">
+        <div class="paragraph" id="paragraph"></div>
+        <div class="input-container">
+            <input type="text" id="typing-input" placeholder="Start typing..." autofocus>
+        </div>
+        <div class="results" id="results">
+            <p id="wpm"></p>
+            <p id="accuracy"></p>
+            <button class="btn-retry" id="retry-button">Try Again</button>
+        </div>
+    </div>
+    <div class="signature">
+        <p>By <a href="https://example.com">Rauf</a></p>
+    </div>
+
+    <script>
+        const paragraphs = [
+            "The quick brown fox jumps over the lazy dog.",
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            "She sells sea shells by the sea shore.",
+            "The rain in Spain stays mainly in the plain.",
+            "How much wood would a woodchuck chuck if a woodchuck could chuck wood?"
+        ];
+
+        const paragraphElement = document.getElementById('paragraph');
+        const inputElement = document.getElementById('typing-input');
+        const resultsElement = document.getElementById('results');
+        const wpmElement = document.getElementById('wpm');
+        const accuracyElement = document.getElementById('accuracy');
+        const retryButton = document.getElementById('retry-button');
+
+        let startTime;
+        let typedText = "";
+        let selectedParagraph;
+        let timer;
+        let isTestRunning = false;
+
+        function startTest() {
+            selectedParagraph = paragraphs[Math.floor(Math.random() * paragraphs.length)];
+            paragraphElement.innerHTML = selectedParagraph.split('').map(char => `<span>${char}</span>`).join('');
+            inputElement.value = '';
+            inputElement.focus();
+            resultsElement.style.display = 'none';
+            typedText = "";
+            isTestRunning = true;
+            startTime = new Date().getTime();
+
+            clearInterval(timer);
+            timer = setTimeout(endTest, 30000); // End test after 30 seconds
+        }
+
+        function endTest() {
+            isTestRunning = false;
+            const endTime = new Date().getTime();
+            const timeDiff = (endTime - startTime) / 1000;
+            const wordsTyped = typedText.split(' ').length;
+            const wpm = Math.round((wordsTyped / timeDiff) * 60);
+
+            let correctChars = 0;
+            for (let i = 0; i < typedText.length; i++) {
+                if (typedText[i] === selectedParagraph[i]) {
+                    correctChars++;
+                }
+            }
+            const accuracy = Math.round((correctChars / selectedParagraph.length) * 100);
+
+            wpmElement.textContent = `Words per minute: ${wpm}`;
+            accuracyElement.textContent = `Accuracy: ${accuracy}%`;
+
+            resultsElement.style.display = 'block';
+        }
+
+        inputElement.addEventListener('input', () => {
+            if (!isTestRunning) return;
+
+            typedText = inputElement.value;
+            const spans = paragraphElement.querySelectorAll('span');
+
+            for (let i = 0; i < spans.length; i++) {
+                if (typedText[i] === undefined) {
+                    spans[i].classList.remove('correct', 'incorrect');
+                } else if (typedText[i] === spans[i].textContent) {
+                    spans[i].classList.add('correct');
+                    spans[i].classList.remove('incorrect');
+                } else {
+                    spans[i].classList.add('incorrect');
+                    spans[i].classList.remove('correct');
+                }
+            }
+
+            if (typedText.length >= selectedParagraph.length) {
+                endTest();
+            }
+        });
+
+        retryButton.addEventListener('click', startTest);
+
+        startTest
+        ();
+        
+        // Clicking on the profile picture redirects to a certain link
+        document.querySelector('header img').addEventListener('click', function() {
+            window.location.href = "https://example.com";
+        });
+    </script>
+</body>
+</html>
